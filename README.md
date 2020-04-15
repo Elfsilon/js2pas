@@ -11,14 +11,14 @@ Clone this repo and type ``` node index.js ``` *(It's just a test)*
 
 ## Step 2:
 Link to your project all modules from logic folder 
-``` 
+```javascript
 const Lexer = require('./logic/Lexer');
 const Parcer = require('./logic/Parser');
 const Compiler = require('./logic/Compiler');
 ```
 ## Step 3:
 Create a Lexer instance and call method parce with scr to your js file
-```
+```javascript
 const lex = new Lexer();
 lex.parse(src).then((parced) => {});
 ```
@@ -26,12 +26,12 @@ lex.parse(src).then((parced) => {});
 ## Last steps:
 ***parced*** - is returned array of tokens you have to feed it to the 
 constructor of Parser object and then get the AST tree from ``` parceTokens() ``` method:
-```
+```javascript
 const parser = new Parcer(tokens);
 let ast = parser.parseTokens();
 ```
 ***AST*** tree object need to pass to the compile method of Compile object and save it with ``` save(src) ``` method:
-```
+```javascript
 const compiler = new Compiler();
 let compiled = compiler.compile(ast);
 compiler.save(compiled).then(() => console.log('\x1b[34m', 'Succesfully compiled', '\x1b[0m'));
