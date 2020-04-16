@@ -16,7 +16,7 @@ lex.parse(src).then((parced) => {
 
 	fs.writeFile('AST.json', JSON.stringify(ast)).then(() => console.log('Created AST.json'));
 
-	const compiler = new Compiler();
+	// const compiler = new Compiler();
 	// let compiled = compiler.compile(ast);
 	// compiler.save(compiled).then(() => console.log('\x1b[34m', 'Succesfully compiled', '\x1b[0m'));
 });

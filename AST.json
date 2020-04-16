@@ -12,9 +12,9 @@
 		{
 			"type": "ExpressionStatement",
 			"expression": {
-				"type": "AssignmentExpression",
+				"type": "BinaryExpression",
 				"left": "level",
-				"rigth": { "type": "BinaryExpression", "operation": "+", "left": "level", "right": "age" }
+				"rigth": { "type": "BinaryExpression", "operation": "-", "left": "age", "right": "level" }
 			}
 		},
 		{ "type": "VariableDeclaration", "declarations": [{ "id": "type", "init": "1" }], "kind": "let" },

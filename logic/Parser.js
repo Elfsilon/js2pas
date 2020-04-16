@@ -122,8 +122,21 @@ class Parcer {
 					left: es._value,
 					rigth: { prepareToRPN: [] },
 				};
-				delete es._value;
+				// delete es._value;
 				es.expression = AssignmentExpression;
+				this._next(this._binaryExpressionHandler, es);
+				break;
+			case '+':
+			case '-':
+			case '*':
+			case '/':
+			case '**':
+				let BinaryExpression = {
+					type: 'BinaryExpression',
+					left: es._value,
+					rigth: { prepareToRPN: [] },
+				};
+				es.expression = BinaryExpression;
 				this._next(this._binaryExpressionHandler, es);
 				break;
 			case '(':
@@ -139,6 +152,7 @@ class Parcer {
 			default:
 				throw new Error('Unexpected identifier value');
 		}
+		delete es._value;
 	}
 
 	/**
