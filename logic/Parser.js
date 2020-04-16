@@ -149,12 +149,16 @@ class Parcer {
 		switch (token.data.value) {
 			case this._symbols.COMMAND_END:
 				let transformed = RPN.transform(es.expression.rigth.prepareToRPN);
-				let tree = this._parseRPN(transformed.reverse(), [], 0, {
+				delete es.expression.rigth.prepareToRPN;
+				let expressionTree = this._parseRPN(transformed, [], 0, {
 					type: 'BinaryExpression',
 					operation: undefined,
 					left: undefined,
 					right: null,
 				});
+				es.expression.rigth = expressionTree;
+				this._AST.body.push(es);
+				this._next(this._parce);
 				break;
 			default:
 				es.expression.rigth.prepareToRPN.push(token.data.value);
@@ -162,21 +166,29 @@ class Parcer {
 		}
 	}
 
+	/**
+	 * Build a BinaryExpression based on the array of tokens in Reverse Polish Notation
+	 */
 	_parseRPN(tokens, stack, i, obj) {
 		if (this._operations.includes(tokens[i])) {
 			obj.operation = tokens[i];
+			if (!obj.right) {
+				obj.right = stack.pop();
+			}
 			obj.left = stack.pop();
-			obj.right = this._parseRPN(tokens, stack, i + 1, {
+			if (i == tokens.length - 1) {
+				return obj;
+			}
+			return this._parseRPN(tokens, stack, i + 1, {
 				type: 'BinaryExpression',
 				operation: undefined,
-				left: stack.pop(),
-				right: null,
+				left: undefined,
+				right: obj,
 			});
 		} else {
 			stack.push(tokens[i]);
-			this._parseRPN(tokens, stack, i + 1, obj);
+			return this._parseRPN(tokens, stack, i + 1, obj);
 		}
-		return obj;
 	}
 
 	/**

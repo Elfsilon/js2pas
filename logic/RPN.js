@@ -47,44 +47,4 @@ class RPN {
 	}
 }
 
-const operations = ['+', '-', '*', '/', '**'];
-
-function parseRPN(tokens, stack, i, obj) {
-	if (operations.includes(tokens[i])) {
-		obj.operation = tokens[i];
-		if (!obj.right) {
-			console.log('one time');
-
-			obj.right = stack.pop();
-		}
-		obj.left = stack.pop();
-		if (i == tokens.length - 1) {
-			return obj;
-		}
-		return parseRPN(tokens, stack, i + 1, {
-			type: 'BinaryExpression',
-			operation: undefined,
-			left: undefined,
-			right: obj,
-		});
-	} else {
-		stack.push(tokens[i]);
-		return parseRPN(tokens, stack, i + 1, obj);
-	}
-}
-
-const fs = require('fs').promises;
-
-let str = '( a + a + a ) / c + d';
-let expr = str.split(' ');
-let transformed = RPN.transform(expr);
-let tree = parseRPN(transformed, [], 0, {
-	type: 'BinaryExpression',
-	operation: undefined,
-	left: undefined,
-	right: null,
-});
-console.log(JSON.stringify(tree));
-fs.writeFile('tree.json', JSON.stringify(tree)).then();
-
 module.exports = RPN;

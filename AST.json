@@ -1,0 +1,23 @@
+{
+	"type": "Program",
+	"body": [
+		{
+			"type": "VariableDeclaration",
+			"declarations": [
+				{ "id": "age", "init": "30" },
+				{ "id": "level", "init": "10" }
+			],
+			"kind": "let"
+		},
+		{
+			"type": "ExpressionStatement",
+			"expression": {
+				"type": "AssignmentExpression",
+				"left": "level",
+				"rigth": { "type": "BinaryExpression", "operation": "+", "left": "level", "right": "age" }
+			}
+		},
+		{ "type": "VariableDeclaration", "declarations": [{ "id": "type", "init": "1" }], "kind": "let" },
+		{ "type": "VariableDeclaration", "declarations": [{ "id": "count", "init": "90" }], "kind": "let" }
+	]
+}
