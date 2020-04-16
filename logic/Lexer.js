@@ -16,7 +16,6 @@ class Token {
 }
 
 class Lexer {
-	// Handle service words, operations, separators, identifiers, literals
 	constructor() {
 		this._types = {
 			identifier: 'Identifier',

@@ -12,9 +12,9 @@ lex.parse(src).then((parced) => {
 
 	const parser = new Parcer(tokens);
 	let ast = parser.parseTokens();
-	console.log(ast.body);
+	// console.log(ast.body);
 
-	const compiler = new Compiler();
-	let compiled = compiler.compile(ast);
-	compiler.save(compiled).then(() => console.log('\x1b[34m', 'Succesfully compiled', '\x1b[0m'));
+	// const compiler = new Compiler();
+	// let compiled = compiler.compile(ast);
+	// compiler.save(compiled).then(() => console.log('\x1b[34m', 'Succesfully compiled', '\x1b[0m'));
 });

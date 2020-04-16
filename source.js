@@ -1,3 +1,7 @@
-let a = 37,
-	c = 34;
-let b = 67;
+let age = 30,
+	level = 10;
+
+level = level + age;
+
+let type = 1;
+let count = 90;

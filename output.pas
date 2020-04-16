@@ -1,7 +1,8 @@
 program;
-var: a, c, b;
+var: age, level, type, count;
 begin
-	a := 37;
-	c := 34;
-	b := 67;
+	age := 30;
+	level := 10;
+	type := 1;
+	count := 90;
 end.

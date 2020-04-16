@@ -1,11 +1,16 @@
-class ValueDeclaration {
-	constructor() {}
-}
-
-class StatementExpression {}
+const RPN = require('./RPN');
 
 class Parcer {
 	constructor(tokens) {
+		this._operations = ['+', '-', '*', '/', '**'];
+		this._symbols = {
+			COMMAND_END: ';',
+			PLUS: '+',
+			MINUS: '-',
+			MULT: '*',
+			DIV: '/',
+			EXPON: '**',
+		};
 		this._AST = {
 			type: 'Program',
 			body: [],
@@ -15,6 +20,10 @@ class Parcer {
 		this._triggers = {
 			ValueDeclaration: 'let',
 			IfStatement: 'if',
+		};
+		this._tokenTypes = {
+			Service: 'Service',
+			Identifier: 'Identifier',
 		};
 	}
 
@@ -32,21 +41,44 @@ class Parcer {
 	}
 
 	_parce(token) {
-		if (token.data.value == this._triggers.ValueDeclaration) {
-			let VariableDeclaration = {
-				type: 'VariableDeclaration',
-				declarations: [{}],
-				kind: 'let',
-			};
-			this._next(this._variableDeclarationHandler, VariableDeclaration);
-		} else {
-			console.log('This is expression statement', token.data.value);
-			this._next(this._parce);
+		switch (token.data.type) {
+			// If service word (let)
+			case this._tokenTypes.Service:
+				switch (token.data.value) {
+					case this._triggers.ValueDeclaration:
+						let VariableDeclaration = {
+							type: 'VariableDeclaration',
+							declarations: [{}],
+							kind: 'let',
+						};
+						this._next(this._variableDeclarationHandler, VariableDeclaration);
+						break;
+					default:
+						console.log('This is expression statement', token.data.value);
+						this._next(this._parce);
+				}
+				break;
+			// If identifier
+			case this._tokenTypes.Identifier:
+				console.log('Give control to statement handler');
+				let ExpressionStatement = {
+					type: 'ExpressionStatement',
+					expression: null,
+					_value: token.data.value,
+				};
+				this._next(this._expressionStatementHandler, ExpressionStatement);
+				break;
+			default:
+				throw new Error('Invalid token type');
 		}
 	}
 
-	// Trace the same variables
-	// Use previous token for detecting syntax errors
+	/**
+	 * Handle the Variable declaration
+	 * @param {Object} vd - Variable declaration object
+	 * @todo Trace the same variables
+	 * @todo Use previous token for detecting syntax errors
+	 */
 	_variableDeclarationHandler(token, vd) {
 		switch (token.data.type) {
 			case 'Identifier':
@@ -75,6 +107,85 @@ class Parcer {
 				throw new Error('Unknown token type in variable declaration');
 		}
 		this._next(this._variableDeclarationHandler, vd);
+	}
+
+	/**
+	 * Defines the required handler of expression handler based on the current token
+	 * There are only tokens with 'Identifier' type
+	 * @param {Object} es - Expression statement object
+	 */
+	_expressionStatementHandler(token, es) {
+		switch (token.data.value) {
+			case '=':
+				let AssignmentExpression = {
+					type: 'AssignmentExpression',
+					left: es._value,
+					rigth: { prepareToRPN: [] },
+				};
+				delete es._value;
+				es.expression = AssignmentExpression;
+				this._next(this._binaryExpressionHandler, es);
+				break;
+			case '(':
+				let CallExpression = {
+					type: 'CallExpression',
+					name: es._value,
+					arguments: [],
+				};
+				delete es._value;
+				es.expression = CallExpression;
+				this._next(this._callExpressionHandler, es);
+				break;
+			default:
+				throw new Error('Unexpected identifier value');
+		}
+	}
+
+	/**
+	 * Collect array of tokens then feed it to the RPN
+	 * @param {Object} es - Expression statement object
+	 */
+	_binaryExpressionHandler(token, es) {
+		switch (token.data.value) {
+			case this._symbols.COMMAND_END:
+				let transformed = RPN.transform(es.expression.rigth.prepareToRPN);
+				let tree = this._parseRPN(transformed.reverse(), [], 0, {
+					type: 'BinaryExpression',
+					operation: undefined,
+					left: undefined,
+					right: null,
+				});
+				break;
+			default:
+				es.expression.rigth.prepareToRPN.push(token.data.value);
+				this._next(this._binaryExpressionHandler, es);
+		}
+	}
+
+	_parseRPN(tokens, stack, i, obj) {
+		if (this._operations.includes(tokens[i])) {
+			obj.operation = tokens[i];
+			obj.left = stack.pop();
+			obj.right = this._parseRPN(tokens, stack, i + 1, {
+				type: 'BinaryExpression',
+				operation: undefined,
+				left: stack.pop(),
+				right: null,
+			});
+		} else {
+			stack.push(tokens[i]);
+			this._parseRPN(tokens, stack, i + 1, obj);
+		}
+		return obj;
+	}
+
+	/**
+	 *
+	 * @param {Object} es - Expression statement object
+	 * @todo Handle all in brackets (give handle each arg to _binaryExpressionHandler)
+	 */
+	_callExpressionHandler(token, es) {
+		console.log('Inside call expression handler');
 	}
 }
 
