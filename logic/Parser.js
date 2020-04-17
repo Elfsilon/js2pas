@@ -2,9 +2,18 @@ const RPN = require('./RPN');
 
 class Parcer {
 	constructor(tokens) {
+		this.statements = {
+			VariableDeclaration: 'VariableDeclaration',
+			AssignmentExpression: 'AssignmentExpression',
+			CallExpression: 'CallExpression',
+			BinaryExpression: 'BinaryExpression',
+		};
 		this._operations = ['+', '-', '*', '/', '**'];
 		this._symbols = {
+			BR_OPEN: '(',
+			BR_CLOSE: ')',
 			COMMAND_END: ';',
+			COMMA: ',',
 			PLUS: '+',
 			MINUS: '-',
 			MULT: '*',
@@ -32,9 +41,11 @@ class Parcer {
 		return this._AST;
 	}
 
-	_next(callback, obj = null) {
-		this._current++;
-		if (this._tokens[this._current] === undefined || this._current == this._tokens.length) {
+	_next(callback, obj = null, increaseCurrent = true) {
+		if (increaseCurrent) {
+			this._current++;
+		}
+		if (this._tokens[this._current] === undefined || this._current >= this._tokens.length) {
 			return;
 		}
 		callback.call(this, this._tokens[this._current], obj);
@@ -69,6 +80,8 @@ class Parcer {
 				this._next(this._expressionStatementHandler, ExpressionStatement);
 				break;
 			default:
+				console.log(token);
+
 				throw new Error('Invalid token type');
 		}
 	}
@@ -117,36 +130,33 @@ class Parcer {
 	_expressionStatementHandler(token, es) {
 		switch (token.data.value) {
 			case '=':
-				let AssignmentExpression = {
+				es.expression = {
 					type: 'AssignmentExpression',
 					left: es._value,
-					rigth: { prepareToRPN: [] },
+					right: { prepareToRPN: [] },
 				};
-				// delete es._value;
-				es.expression = AssignmentExpression;
 				this._next(this._binaryExpressionHandler, es);
 				break;
-			case '+':
-			case '-':
-			case '*':
-			case '/':
-			case '**':
-				let BinaryExpression = {
+			case this._symbols.PLUS:
+			case this._symbols.MINUS:
+			case this._symbols.MULT:
+			case this._symbols.DIV:
+			case this._symbols.EXPON:
+				es.expression = {
 					type: 'BinaryExpression',
 					left: es._value,
-					rigth: { prepareToRPN: [] },
+					right: { prepareToRPN: [] }, // prepareRPN is temp
 				};
-				es.expression = BinaryExpression;
 				this._next(this._binaryExpressionHandler, es);
 				break;
-			case '(':
-				let CallExpression = {
+			case this._symbols.BR_OPEN:
+				es.expression = {
 					type: 'CallExpression',
 					name: es._value,
 					arguments: [],
+					right: { prepareToRPN: [] }, // Temp
 				};
-				delete es._value;
-				es.expression = CallExpression;
+				// this._current--; // crutch
 				this._next(this._callExpressionHandler, es);
 				break;
 			default:
@@ -156,27 +166,82 @@ class Parcer {
 	}
 
 	/**
-	 * Collect array of tokens then feed it to the RPN
 	 * @param {Object} es - Expression statement object
 	 */
-	_binaryExpressionHandler(token, es) {
+	_callExpressionHandler(token, es) {
 		switch (token.data.value) {
 			case this._symbols.COMMAND_END:
-				let transformed = RPN.transform(es.expression.rigth.prepareToRPN);
-				delete es.expression.rigth.prepareToRPN;
-				let expressionTree = this._parseRPN(transformed, [], 0, {
-					type: 'BinaryExpression',
-					operation: undefined,
-					left: undefined,
-					right: null,
-				});
-				es.expression.rigth = expressionTree;
+				delete es.expression.right;
 				this._AST.body.push(es);
 				this._next(this._parce);
 				break;
 			default:
-				es.expression.rigth.prepareToRPN.push(token.data.value);
-				this._next(this._binaryExpressionHandler, es);
+				this._next(this._binaryExpressionHandler, es, false);
+		}
+	}
+
+	/**
+	 * Collect array of tokens then feed it to the RPN
+	 * @param {Object} es - Expression statement object
+	 */
+	_binaryExpressionHandler(token, es) {
+		switch (es.expression.type) {
+			// Handle arguments of function call expression
+			case this.statements.CallExpression:
+				switch (token.data.value) {
+					case this._symbols.BR_CLOSE:
+					case this._symbols.COMMA: {
+						if (es.expression.right.prepareToRPN.length <= 1) {
+							if (es.expression.right.prepareToRPN.length == 0) {
+								throw new Error('Argument is empty');
+							}
+							es.expression.arguments.push(es.expression.right.prepareToRPN[0]);
+						} else {
+							let transformed = RPN.transform(es.expression.right.prepareToRPN);
+							let expressionTree = this._parseRPN(transformed, [], 0, {
+								type: 'BinaryExpression',
+								operation: undefined,
+								left: undefined,
+								right: null,
+							});
+							es.expression.arguments.push(expressionTree);
+						}
+						es.expression.right.prepareToRPN = [];
+						this._next(this._callExpressionHandler, es);
+						break;
+					}
+					default: {
+						es.expression.right.prepareToRPN.push(token.data.value);
+						this._next(this._binaryExpressionHandler, es);
+					}
+				}
+				break;
+			// Handle left part of assignment expression and binary expression
+			case this.statements.AssignmentExpression:
+			case this.statements.BinaryExpression:
+				switch (token.data.value) {
+					case this._symbols.COMMAND_END: {
+						let transformed = RPN.transform(es.expression.right.prepareToRPN);
+						delete es.expression.right.prepareToRPN;
+						let expressionTree = this._parseRPN(transformed, [], 0, {
+							type: 'BinaryExpression',
+							operation: undefined,
+							left: undefined,
+							right: null,
+						});
+						es.expression.right = expressionTree;
+						this._AST.body.push(es);
+						this._next(this._parce);
+						break;
+					}
+					default: {
+						es.expression.right.prepareToRPN.push(token.data.value);
+						this._next(this._binaryExpressionHandler, es);
+					}
+				}
+				break;
+			default:
+				throw new Error('Unknown statement expression type');
 		}
 	}
 
@@ -203,15 +268,6 @@ class Parcer {
 			stack.push(tokens[i]);
 			return this._parseRPN(tokens, stack, i + 1, obj);
 		}
-	}
-
-	/**
-	 *
-	 * @param {Object} es - Expression statement object
-	 * @todo Handle all in brackets (give handle each arg to _binaryExpressionHandler)
-	 */
-	_callExpressionHandler(token, es) {
-		console.log('Inside call expression handler');
 	}
 }
 

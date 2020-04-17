@@ -2,22 +2,20 @@
 	"type": "Program",
 	"body": [
 		{
-			"type": "VariableDeclaration",
-			"declarations": [
-				{ "id": "age", "init": "30" },
-				{ "id": "level", "init": "10" }
-			],
-			"kind": "let"
-		},
-		{
 			"type": "ExpressionStatement",
 			"expression": {
-				"type": "BinaryExpression",
-				"left": "level",
-				"rigth": { "type": "BinaryExpression", "operation": "-", "left": "age", "right": "level" }
+				"type": "CallExpression",
+				"name": "funName",
+				"arguments": [
+					{
+						"type": "BinaryExpression",
+						"operation": "+",
+						"left": "arg1",
+						"right": { "type": "BinaryExpression", "operation": "/", "left": "a", "right": "b" }
+					},
+					{ "type": "BinaryExpression", "operation": "/", "left": "arg2", "right": "c" }
+				]
 			}
-		},
-		{ "type": "VariableDeclaration", "declarations": [{ "id": "type", "init": "1" }], "kind": "let" },
-		{ "type": "VariableDeclaration", "declarations": [{ "id": "count", "init": "90" }], "kind": "let" }
+		}
 	]
 }
