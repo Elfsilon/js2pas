@@ -2,6 +2,12 @@
 	"type": "Program",
 	"body": [
 		{
+			"type": "FunctionDeclaration",
+			"name": "funName",
+			"params": ["a", "b"],
+			"body": { "type": "BlockStatement", "body": [{ "type": "ReturnStatement", "argument": 0 }] }
+		},
+		{
 			"type": "VariableDeclaration",
 			"declarations": [
 				{ "id": "a", "init": "3" },
@@ -24,30 +30,6 @@
 					{ "type": "BinaryExpression", "operation": "/", "left": "arg2", "right": "c" }
 				]
 			}
-		},
-		{
-			"type": "ExpressionStatement",
-			"expression": {
-				"type": "AssignmentExpression",
-				"left": "a",
-				"right": { "type": "BinaryExpression", "operation": "+", "left": "b", "right": "d" }
-			}
-		},
-		{
-			"type": "ExpressionStatement",
-			"expression": {
-				"type": "BinaryExpression",
-				"left": "b",
-				"right": { "type": "BinaryExpression", "operation": "+", "left": "d", "right": "c" }
-			}
-		},
-		{
-			"type": "VariableDeclaration",
-			"declarations": [
-				{ "id": "a", "init": "3" },
-				{ "id": "c", "init": "94" }
-			],
-			"kind": "let"
 		}
 	]
 }

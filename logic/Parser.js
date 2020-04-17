@@ -4,9 +4,11 @@ class Parcer {
 	constructor(tokens) {
 		this.statements = {
 			VariableDeclaration: 'VariableDeclaration',
+			FunctionDeclaration: 'FunctionDeclaration',
 			AssignmentExpression: 'AssignmentExpression',
 			CallExpression: 'CallExpression',
 			BinaryExpression: 'BinaryExpression',
+			BlockStatement: 'BlockStatement',
 		};
 		this._operations = ['+', '-', '*', '/', '**'];
 		this._symbols = {
@@ -28,6 +30,7 @@ class Parcer {
 		this._tokens = tokens;
 		this._current = 0;
 		this._triggers = {
+			FunctionDeclaration: 'function',
 			VariableDeclaration: 'let',
 			IfStatement: 'if',
 		};
@@ -60,28 +63,88 @@ class Parcer {
 			// If service word (let)
 			case this._tokenTypes.SERVICE:
 				switch (token.data.value) {
-					case this._triggers.VariableDeclaration:
+					case this._triggers.VariableDeclaration: {
+						console.log('---Transferring control to _variableDeclarationHandler---');
 						this._next(this._variableDeclarationHandler, {
 							type: this.statements.VariableDeclaration,
 							declarations: [{}],
 							kind: 'let',
 						});
 						break;
-					default:
-						this._next(this._parce);
+					}
+					case this._triggers.FunctionDeclaration:
+						console.log('---Transferring control to _functionDeclarationHandler---');
+						this._next(this._functionDeclarationHandler, {
+							type: this.statements.FunctionDeclaration,
+							name: undefined,
+							params: [],
+							body: {
+								type: this.statements.BlockStatement,
+								body: [],
+							},
+						});
+						break;
+					default: {
+						this._next(this._parce); //What is this??? throw new Error();
+					}
 				}
 				break;
 			// If identifier
-			case this._tokenTypes.IDENTIFIER:
-				console.log('Give control to statement handler');
+			case this._tokenTypes.IDENTIFIER: {
+				console.log('---Transferring control to _expressionStatementHandler---');
 				this._next(this._expressionStatementHandler, {
 					type: 'ExpressionStatement',
 					expression: null,
 					_value: token.data.value,
 				});
 				break;
+			}
 			default:
 				throw new Error('(_parce error) ** Invalid token type **');
+		}
+	}
+
+	_functionDeclarationHandler(token, fd) {
+		fd.name = token.data.value;
+		this._next(this._paramsCollector, fd);
+	}
+
+	/**
+	 * @todo Add handle of errors (expressions)
+	 */
+	_paramsCollector(token, fd) {
+		switch (token.data.value) {
+			case '(':
+			case ',':
+				this._next(this._paramsCollector, fd);
+				break;
+			case ')':
+				this._next(this._blockStatementHandler, fd);
+				break;
+			default:
+				fd.params.push(token.data.value);
+				this._next(this._paramsCollector, fd);
+		}
+	}
+
+	/**
+	 * @todo All
+	 */
+	_blockStatementHandler(token, fd) {
+		switch (token.data.value) {
+			case 'return':
+				// Need return handler
+				fd.body.body.push({
+					type: 'ReturnStatement',
+					argument: 0,
+				});
+				this._next(this._blockStatementHandler, fd);
+				break;
+			case '}':
+				this._AST.body.push(fd);
+				this._next(this._parce);
+			default:
+				this._next(this._blockStatementHandler, fd);
 		}
 	}
 
