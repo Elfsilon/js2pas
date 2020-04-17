@@ -2,6 +2,14 @@
 	"type": "Program",
 	"body": [
 		{
+			"type": "VariableDeclaration",
+			"declarations": [
+				{ "id": "a", "init": "3" },
+				{ "id": "c", "init": "94" }
+			],
+			"kind": "let"
+		},
+		{
 			"type": "ExpressionStatement",
 			"expression": {
 				"type": "CallExpression",
@@ -16,6 +24,30 @@
 					{ "type": "BinaryExpression", "operation": "/", "left": "arg2", "right": "c" }
 				]
 			}
+		},
+		{
+			"type": "ExpressionStatement",
+			"expression": {
+				"type": "AssignmentExpression",
+				"left": "a",
+				"right": { "type": "BinaryExpression", "operation": "+", "left": "b", "right": "d" }
+			}
+		},
+		{
+			"type": "ExpressionStatement",
+			"expression": {
+				"type": "BinaryExpression",
+				"left": "b",
+				"right": { "type": "BinaryExpression", "operation": "+", "left": "d", "right": "c" }
+			}
+		},
+		{
+			"type": "VariableDeclaration",
+			"declarations": [
+				{ "id": "a", "init": "3" },
+				{ "id": "c", "init": "94" }
+			],
+			"kind": "let"
 		}
 	]
 }

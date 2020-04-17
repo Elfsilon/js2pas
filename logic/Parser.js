@@ -10,6 +10,7 @@ class Parcer {
 		};
 		this._operations = ['+', '-', '*', '/', '**'];
 		this._symbols = {
+			EQUAL: '=',
 			BR_OPEN: '(',
 			BR_CLOSE: ')',
 			COMMAND_END: ';',
@@ -27,12 +28,15 @@ class Parcer {
 		this._tokens = tokens;
 		this._current = 0;
 		this._triggers = {
-			ValueDeclaration: 'let',
+			VariableDeclaration: 'let',
 			IfStatement: 'if',
 		};
 		this._tokenTypes = {
-			Service: 'Service',
-			Identifier: 'Identifier',
+			SERVICE: 'Service',
+			IDENTIFIER: 'Identifier',
+			OPERATION: 'Operation',
+			LITERAL: 'Literal',
+			SEPARATOR: 'Separator',
 		};
 	}
 
@@ -54,35 +58,30 @@ class Parcer {
 	_parce(token) {
 		switch (token.data.type) {
 			// If service word (let)
-			case this._tokenTypes.Service:
+			case this._tokenTypes.SERVICE:
 				switch (token.data.value) {
-					case this._triggers.ValueDeclaration:
-						let VariableDeclaration = {
-							type: 'VariableDeclaration',
+					case this._triggers.VariableDeclaration:
+						this._next(this._variableDeclarationHandler, {
+							type: this.statements.VariableDeclaration,
 							declarations: [{}],
 							kind: 'let',
-						};
-						this._next(this._variableDeclarationHandler, VariableDeclaration);
+						});
 						break;
 					default:
-						console.log('This is expression statement', token.data.value);
 						this._next(this._parce);
 				}
 				break;
 			// If identifier
-			case this._tokenTypes.Identifier:
+			case this._tokenTypes.IDENTIFIER:
 				console.log('Give control to statement handler');
-				let ExpressionStatement = {
+				this._next(this._expressionStatementHandler, {
 					type: 'ExpressionStatement',
 					expression: null,
 					_value: token.data.value,
-				};
-				this._next(this._expressionStatementHandler, ExpressionStatement);
+				});
 				break;
 			default:
-				console.log(token);
-
-				throw new Error('Invalid token type');
+				throw new Error('(_parce error) ** Invalid token type **');
 		}
 	}
 
@@ -94,30 +93,29 @@ class Parcer {
 	 */
 	_variableDeclarationHandler(token, vd) {
 		switch (token.data.type) {
-			case 'Identifier':
+			case this._tokenTypes.IDENTIFIER:
 				vd.declarations[vd.declarations.length - 1].id = token.data.value;
 				break;
-			case 'Literal':
+			case this._tokenTypes.LITERAL:
 				vd.declarations[vd.declarations.length - 1].init = token.data.value;
 				break;
-			case 'Separator':
+			case this._tokenTypes.SEPARATOR:
 				switch (token.data.value) {
-					case ';':
+					case this._symbols.COMMAND_END:
 						this._AST.body.push(vd);
 						this._next(this._parce);
 						break;
-					case ',':
+					case this._symbols.COMMA:
 						vd.declarations.push({});
 						break;
 					default:
-						throw new Error('Unknown separator in variable declaration');
+						throw new Error('(_variableDeclarationHandler error) ** Unknown separator **');
 				}
 				break;
-			case 'Operation':
-				// ---
+			case this._tokenTypes.OPERATION:
 				break;
 			default:
-				throw new Error('Unknown token type in variable declaration');
+				throw new Error('(_variableDeclarationHandler error) ** Unknown token type **');
 		}
 		this._next(this._variableDeclarationHandler, vd);
 	}
@@ -129,9 +127,9 @@ class Parcer {
 	 */
 	_expressionStatementHandler(token, es) {
 		switch (token.data.value) {
-			case '=':
+			case this._symbols.EQUAL:
 				es.expression = {
-					type: 'AssignmentExpression',
+					type: this.statements.AssignmentExpression,
 					left: es._value,
 					right: { prepareToRPN: [] },
 				};
@@ -143,7 +141,7 @@ class Parcer {
 			case this._symbols.DIV:
 			case this._symbols.EXPON:
 				es.expression = {
-					type: 'BinaryExpression',
+					type: this.statements.BinaryExpression,
 					left: es._value,
 					right: { prepareToRPN: [] }, // prepareRPN is temp
 				};
@@ -151,16 +149,15 @@ class Parcer {
 				break;
 			case this._symbols.BR_OPEN:
 				es.expression = {
-					type: 'CallExpression',
+					type: this.statements.CallExpression,
 					name: es._value,
 					arguments: [],
 					right: { prepareToRPN: [] }, // Temp
 				};
-				// this._current--; // crutch
 				this._next(this._callExpressionHandler, es);
 				break;
 			default:
-				throw new Error('Unexpected identifier value');
+				throw new Error('(_expressionStatementHandler error) Unexpected identifier value');
 		}
 		delete es._value;
 	}
@@ -241,7 +238,7 @@ class Parcer {
 				}
 				break;
 			default:
-				throw new Error('Unknown statement expression type');
+				throw new Error('(_binaryExpressionHandler error) Unknown statement expression type');
 		}
 	}
 
