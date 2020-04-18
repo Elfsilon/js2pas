@@ -1,1 +1,17 @@
-{ "type": "Program", "body": { "type": "BlockStatement", "body": [] } }
+{
+	"type": "Program",
+	"body": {
+		"type": "BlockStatement",
+		"body": [
+			{
+				"type": "FunctionDeclaration",
+				"name": "name",
+				"params": ["arg1", "arg2"],
+				"body": {
+					"type": "BlockStatement",
+					"body": [{ "type": "VariableDeclaration", "declarations": [{ "id": "a", "init": "0" }], "kind": "let" }]
+				}
+			}
+		]
+	}
+}

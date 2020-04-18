@@ -60,36 +60,45 @@ class Parser {
 	 * @returns Block statement object
 	 */
 	_blockStatementHandler(token) {
+		console.log('BLOCK STATEMENT:', token);
+
 		let BlockStatement = {
 			type: this.statements.BlockStatement,
 			body: [],
 		};
-		while (this._current != this._tokens.length - 1 && token.data.value != this._symbols.CURLY_CLOSE) {
-			switch (token.data.type) {
+		while (
+			this._current != this._tokens.length - 1 &&
+			this._tokens[this._current].data.value != this._symbols.CURLY_CLOSE
+		) {
+			console.log('CURRENT WHILE =', this._tokens[this._current].data.value);
+
+			switch (this._tokens[this._current].data.type) {
 				case this._tokenTypes.SERVICE: {
 					switch (token.data.value) {
 						case this._triggers.VariableDeclaration: {
 							console.log('--Transfer control to _variableDeclarationHandler--');
 							BlockStatement.body.push({
 								type: this.statements.VariableDeclaration,
-								declarations: this._variableDeclarationHandler(),
+								declarations: this._variableDeclarationHandler(this._nextToken()),
 								kind: 'let',
 							});
 							break;
 						}
 						case this._triggers.FunctionDeclaration: {
 							console.log('--Transfer control to _functionDeclarationHandler--');
-							BlockStatement.body.push(this._functionDeclarationHandler());
+							BlockStatement.body.push(this._functionDeclarationHandler(this._nextToken()));
+							console.log('END OF FD');
 							break;
 						}
 						default: {
 							throw new Error('_blockStatementError: <Unknown service token>', token.data.value);
 						}
 					}
+					break;
 				}
 				case this._tokenTypes.IDENTIFIER: {
 					console.log('--Transfer control to _expressionStatementHandler--');
-					BlockStatement.body.push(this._expressionStatementHandler());
+					// BlockStatement.body.push(this._expressionStatementHandler());
 					break;
 				}
 				default:
@@ -102,21 +111,80 @@ class Parser {
 	/**
 	 * @returns Array of declarations
 	 */
-	_variableDeclarationHandler() {
-		let token = this._nextToken();
-		while (token.data.value != this._symbols.COMMAND_END) {
-			console.log('TIMES');
-			VariableDeclaration.declarations.push(this._variableDeclarator());
+	_variableDeclarationHandler(token) {
+		let result = [];
+		let declaration = [];
+		let END = false;
+
+		while (!END) {
+			switch (token.data.value) {
+				case this._symbols.COMMAND_END: {
+					result.push(this._newAssignmentFrom(declaration));
+					END = true;
+					break;
+				}
+				case this._symbols.COMMA: {
+					result.push(this._newAssignmentFrom(declaration));
+					declaration = [];
+					token = this._nextToken();
+					break;
+				}
+				case this._symbols.EQUAL: {
+					token = this._nextToken();
+					break;
+				}
+				default: {
+					declaration.push(token.data.value);
+					token = this._nextToken();
+				}
+			}
 		}
-		return [];
+		this._nextToken();
+		return result;
 	}
 
-	_variableDeclarator() {}
+	_newAssignmentFrom(assignment) {
+		let init = assignment.slice(1);
+		if (init.length == 1) {
+			init = init[0];
+		} else {
+			init = this._binaryExpressionHandler(init);
+		}
+		return {
+			id: assignment[0],
+			init: init,
+		};
+	}
 
 	/**
 	 * @returns FunctionDeclaration object
 	 */
-	_functionDeclarationHandler() {}
+	_functionDeclarationHandler(token) {
+		let functionName = token.data.value;
+
+		// Handle Params
+		this._nextToken();
+		token = this._nextToken();
+		let params = [];
+		while (token.data.value != this._symbols.BR_CLOSE) {
+			if (token.data.value != this._symbols.COMMA) {
+				params.push(token.data.value);
+			}
+			token = this._nextToken();
+		}
+
+		// Handle Block Statement
+		this._nextToken();
+		let body = this._blockStatementHandler(this._nextToken());
+		console.log(body);
+
+		return {
+			type: this.statements.FunctionDeclaration,
+			name: functionName,
+			params: params,
+			body: body,
+		};
+	}
 
 	/**
 	 * @returns ExpressionStatement object
@@ -126,15 +194,7 @@ class Parser {
 	/**
 	 * Collect array of tokens then feed it to the RPN
 	 */
-	_binaryExpressionHandler() {
-		let token = this._nextToken();
-		let expression = [];
-		while (token.data.value != this._symbols.COMMAND_END && token.data.value != this._symbols.COMMA) {
-			expression.push(token.data.value);
-			token = this._nextToken();
-		}
-		console.log(expression);
-
+	_binaryExpressionHandler(expression) {
 		return this._parseRPN(RPN.transform(expression), [], 0, {
 			type: 'BinaryExpression',
 			operation: undefined,
