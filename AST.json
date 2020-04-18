@@ -4,12 +4,37 @@
 		"type": "BlockStatement",
 		"body": [
 			{
-				"type": "FunctionDeclaration",
-				"name": "name",
-				"params": ["arg1", "arg2"],
-				"body": {
+				"type": "IfStatement",
+				"condition": ["a", ">", "b", "&&", "a", "<", "c"],
+				"consequent": {
 					"type": "BlockStatement",
-					"body": [{ "type": "VariableDeclaration", "declarations": [{ "id": "a", "init": "0" }], "kind": "let" }]
+					"body": [
+						{
+							"type": "ExpressionStatement",
+							"expression": { "type": "AssignmentExpression", "left": "a", "right": "c" }
+						},
+						{
+							"type": "ExpressionStatement",
+							"expression": { "type": "AssignmentExpression", "left": "a", "right": "c" }
+						},
+						{
+							"type": "ExpressionStatement",
+							"expression": { "type": "AssignmentExpression", "left": "a", "right": "c" }
+						}
+					]
+				},
+				"alternate": {
+					"type": "BlockStatement",
+					"body": [
+						{
+							"type": "ExpressionStatement",
+							"expression": { "type": "AssignmentExpression", "left": "a", "right": "b" }
+						},
+						{
+							"type": "ExpressionStatement",
+							"expression": { "type": "AssignmentExpression", "left": "b", "right": "c" }
+						}
+					]
 				}
 			}
 		]

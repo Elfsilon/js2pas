@@ -12,6 +12,8 @@ class Parser {
 		this.statements = {
 			VariableDeclaration: 'VariableDeclaration',
 			FunctionDeclaration: 'FunctionDeclaration',
+			IfStatement: 'IfStatement',
+			ExpressionStatement: 'ExpressionStatement',
 			AssignmentExpression: 'AssignmentExpression',
 			CallExpression: 'CallExpression',
 			BinaryExpression: 'BinaryExpression',
@@ -60,21 +62,21 @@ class Parser {
 	 * @returns Block statement object
 	 */
 	_blockStatementHandler(token) {
-		console.log('BLOCK STATEMENT:', token);
-
 		let BlockStatement = {
 			type: this.statements.BlockStatement,
 			body: [],
 		};
-		while (
-			this._current != this._tokens.length - 1 &&
-			this._tokens[this._current].data.value != this._symbols.CURLY_CLOSE
-		) {
+		while (this._current < this._tokens.length && this._tokens[this._current].data.value != this._symbols.CURLY_CLOSE) {
 			console.log('CURRENT WHILE =', this._tokens[this._current].data.value);
 
 			switch (this._tokens[this._current].data.type) {
 				case this._tokenTypes.SERVICE: {
-					switch (token.data.value) {
+					switch (this._tokens[this._current].data.value) {
+						case this._triggers.IfStatement: {
+							console.log('--Transfer control to _ifStatementHandler--');
+							BlockStatement.body.push(this._ifStatementHandler(this._nextToken()));
+							break;
+						}
 						case this._triggers.VariableDeclaration: {
 							console.log('--Transfer control to _variableDeclarationHandler--');
 							BlockStatement.body.push({
@@ -98,7 +100,13 @@ class Parser {
 				}
 				case this._tokenTypes.IDENTIFIER: {
 					console.log('--Transfer control to _expressionStatementHandler--');
-					// BlockStatement.body.push(this._expressionStatementHandler());
+					let expr = this._expressionStatementHandler(this._tokens[this._current]);
+					console.log(expr);
+
+					BlockStatement.body.push({
+						type: this.statements.ExpressionStatement,
+						expression: expr,
+					});
 					break;
 				}
 				default:
@@ -106,6 +114,32 @@ class Parser {
 			}
 		}
 		return BlockStatement;
+	}
+
+	_ifStatementHandler(token) {
+		token = this._nextToken();
+		let expression = [];
+		// Extracting expression
+		while (token.data.value != this._symbols.BR_CLOSE) {
+			expression.push(token.data.value);
+			token = this._nextToken();
+		}
+		// Extracting consequent
+		this._nextToken();
+		let consequent = this._blockStatementHandler(this._nextToken());
+		console.log(consequent);
+
+		// Extracting alternate
+		this._nextToken(); // Passing else and '{'
+		this._nextToken();
+		let alternate = this._blockStatementHandler(this._nextToken());
+
+		return {
+			type: this.statements.IfStatement,
+			condition: expression,
+			consequent: consequent,
+			alternate: alternate,
+		};
 	}
 
 	/**
@@ -176,8 +210,8 @@ class Parser {
 		// Handle Block Statement
 		this._nextToken();
 		let body = this._blockStatementHandler(this._nextToken());
-		console.log(body);
 
+		this._nextToken();
 		return {
 			type: this.statements.FunctionDeclaration,
 			name: functionName,
@@ -189,7 +223,78 @@ class Parser {
 	/**
 	 * @returns ExpressionStatement object
 	 */
-	_expressionStatementHandler() {}
+	_expressionStatementHandler(prevToken) {
+		let token = this._nextToken();
+		switch (token.data.value) {
+			case this._symbols.PLUS:
+			case this._symbols.MINUS:
+			case this._symbols.MULT:
+			case this._symbols.DIV:
+			case this._symbols.EXPON: {
+				// BinaryExpression
+				let expression = [prevToken.data.value];
+				while (token.data.value != this._symbols.COMMAND_END) {
+					expression.push(token.data.value);
+					token = this._nextToken();
+				}
+				this._nextToken();
+				return this._binaryExpressionHandler(expression);
+			}
+			case this._symbols.EQUAL: {
+				// AssignmentExpression
+				let expression = [];
+				token = this._nextToken();
+				while (token.data.value != this._symbols.COMMAND_END) {
+					expression.push(token.data.value);
+					token = this._nextToken();
+				}
+				if (expression.length == 1) {
+					expression = expression[0];
+				} else {
+					expression = this._binaryExpressionHandler(expression);
+				}
+				this._nextToken();
+				return {
+					type: this.statements.AssignmentExpression,
+					left: prevToken.data.value,
+					right: expression,
+				};
+			}
+			case this._symbols.BR_OPEN: {
+				// CallExpression
+				let args = [];
+				let expression = [];
+
+				token = this._nextToken();
+				while (token.data.value != this._symbols.COMMAND_END) {
+					switch (token.data.value) {
+						case this._symbols.BR_CLOSE:
+						case this._symbols.COMMA: {
+							if (expression.length == 1) {
+								args.push(expression[0]);
+							} else {
+								args.push(this._binaryExpressionHandler(expression));
+							}
+							expression = [];
+							break;
+						}
+						default:
+							expression.push(token.data.value);
+					}
+					token = this._nextToken();
+				}
+				this._nextToken();
+				return {
+					type: this.statements.CallExpression,
+					name: prevToken.data.value,
+					arguments: args,
+				};
+			}
+			default: {
+				throw new Error('_expressionStatementHandler: <Unexpected token>');
+			}
+		}
+	}
 
 	/**
 	 * Collect array of tokens then feed it to the RPN
