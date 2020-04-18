@@ -1,8 +1,16 @@
 program;
-var: age, level, type, count;
+var: a:integer;
+procedure swap(a, b);
+var: tmp, tmp:integer;
 begin
-	age := 30;
-	level := 10;
-	type := 1;
-	count := 90;
+	tmp := a;
+	tmp := a;
+	a = b;
+	b = tmp;
+end;
+
+begin
+	a := b;
+	a + b;
 end.
+
