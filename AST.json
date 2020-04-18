@@ -4,35 +4,81 @@
 		"type": "BlockStatement",
 		"body": [
 			{
-				"type": "IfStatement",
-				"condition": ["a", ">", "b", "&&", "a", "<", "c"],
-				"consequent": {
+				"type": "FunctionDeclaration",
+				"name": "show",
+				"params": ["a", "b", "c"],
+				"body": {
 					"type": "BlockStatement",
 					"body": [
 						{
 							"type": "ExpressionStatement",
-							"expression": { "type": "AssignmentExpression", "left": "a", "right": "c" }
-						},
-						{
-							"type": "ExpressionStatement",
-							"expression": { "type": "AssignmentExpression", "left": "a", "right": "c" }
-						},
-						{
-							"type": "ExpressionStatement",
-							"expression": { "type": "AssignmentExpression", "left": "a", "right": "c" }
+							"expression": { "type": "CallExpression", "name": "print", "arguments": ["a", "b", "c"] }
 						}
 					]
-				},
-				"alternate": {
+				}
+			},
+			{
+				"type": "VariableDeclaration",
+				"declarations": [
+					{ "id": "a", "init": "1" },
+					{ "id": "b", "init": "2" },
+					{ "id": "c", "init": "3" }
+				],
+				"kind": "let"
+			},
+			{
+				"type": "WhileStatement",
+				"condition": { "type": "BinaryExpression", "operation": ">", "left": "3", "right": "2" },
+				"body": {
 					"type": "BlockStatement",
 					"body": [
 						{
-							"type": "ExpressionStatement",
-							"expression": { "type": "AssignmentExpression", "left": "a", "right": "b" }
-						},
-						{
-							"type": "ExpressionStatement",
-							"expression": { "type": "AssignmentExpression", "left": "b", "right": "c" }
+							"type": "IfStatement",
+							"condition": { "type": "BinaryExpression", "operation": ">", "left": "b", "right": "a" },
+							"consequent": {
+								"type": "BlockStatement",
+								"body": [
+									{
+										"type": "ExpressionStatement",
+										"expression": {
+											"type": "CallExpression",
+											"name": "show",
+											"arguments": [
+												{ "type": "BinaryExpression", "operation": "+", "left": "a", "right": "b" },
+												{ "type": "BinaryExpression", "operation": "+", "left": "c", "right": "a" },
+												{
+													"type": "BinaryExpression",
+													"operation": "*",
+													"left": "c",
+													"right": { "type": "BinaryExpression", "operation": "*", "right": "c" }
+												}
+											]
+										}
+									}
+								]
+							},
+							"alternate": {
+								"type": "BlockStatement",
+								"body": [
+									{
+										"type": "ExpressionStatement",
+										"expression": {
+											"type": "CallExpression",
+											"name": "show",
+											"arguments": [
+												{ "type": "BinaryExpression", "operation": "+", "left": "a", "right": "b" },
+												{ "type": "BinaryExpression", "operation": "+", "left": "c", "right": "a" },
+												{
+													"type": "BinaryExpression",
+													"operation": "*",
+													"left": "c",
+													"right": { "type": "BinaryExpression", "operation": "*", "right": "c" }
+												}
+											]
+										}
+									}
+								]
+							}
 						}
 					]
 				}

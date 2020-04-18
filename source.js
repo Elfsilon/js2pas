@@ -1,8 +1,3 @@
-if (a > b && a < c) {
-	a = c;
-	a = c;
-	a = c;
-} else {
-	a = b;
-	b = c;
-}
+let a = 1,
+	b = 2,
+	c = 3;

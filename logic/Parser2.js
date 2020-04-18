@@ -8,10 +8,12 @@ class Parser {
 		};
 		this._tokens = tokens;
 		this._current = 0;
-		this._operations = ['+', '-', '*', '/', '**'];
+		this._operations = ['+', '-', '*', '/', '**', '>', '<', '>=', '<=', '=='];
 		this.statements = {
 			VariableDeclaration: 'VariableDeclaration',
 			FunctionDeclaration: 'FunctionDeclaration',
+			WhileStatement: 'WhileStatement',
+			ForStatement: 'ForStatement',
 			IfStatement: 'IfStatement',
 			ExpressionStatement: 'ExpressionStatement',
 			AssignmentExpression: 'AssignmentExpression',
@@ -37,6 +39,8 @@ class Parser {
 			FunctionDeclaration: 'function',
 			VariableDeclaration: 'let',
 			IfStatement: 'if',
+			ForStatement: 'for',
+			WhileStatement: 'while',
 		};
 		this._tokenTypes = {
 			SERVICE: 'Service',
@@ -72,6 +76,11 @@ class Parser {
 			switch (this._tokens[this._current].data.type) {
 				case this._tokenTypes.SERVICE: {
 					switch (this._tokens[this._current].data.value) {
+						case this._triggers.WhileStatement: {
+							console.log('--Transfer control to _whileStatementHandler--');
+							BlockStatement.body.push(this._whileStatementHandler(this._nextToken()));
+							break;
+						}
 						case this._triggers.IfStatement: {
 							console.log('--Transfer control to _ifStatementHandler--');
 							BlockStatement.body.push(this._ifStatementHandler(this._nextToken()));
@@ -116,6 +125,103 @@ class Parser {
 		return BlockStatement;
 	}
 
+	/**
+	 * @returns ExpressionStatement object
+	 */
+	_expressionStatementHandler(prevToken) {
+		let token = this._nextToken();
+		switch (token.data.value) {
+			case this._symbols.PLUS:
+			case this._symbols.MINUS:
+			case this._symbols.MULT:
+			case this._symbols.DIV:
+			case this._symbols.EXPON: {
+				// BinaryExpression
+				let expression = [prevToken.data.value];
+				while (token.data.value != this._symbols.COMMAND_END) {
+					expression.push(token.data.value);
+					token = this._nextToken();
+				}
+				this._nextToken();
+				return this._binaryExpressionHandler(expression);
+			}
+			case this._symbols.EQUAL: {
+				// AssignmentExpression
+				let expression = [];
+				token = this._nextToken();
+				while (token.data.value != this._symbols.COMMAND_END) {
+					expression.push(token.data.value);
+					token = this._nextToken();
+				}
+				if (expression.length == 1) {
+					expression = expression[0];
+				} else {
+					expression = this._binaryExpressionHandler(expression);
+				}
+				this._nextToken();
+				return {
+					type: this.statements.AssignmentExpression,
+					left: prevToken.data.value,
+					right: expression,
+				};
+			}
+			case this._symbols.BR_OPEN: {
+				// CallExpression
+				let args = [];
+				let expression = [];
+
+				token = this._nextToken();
+				while (token.data.value != this._symbols.COMMAND_END) {
+					switch (token.data.value) {
+						case this._symbols.BR_CLOSE:
+						case this._symbols.COMMA: {
+							if (expression.length == 1) {
+								args.push(expression[0]);
+							} else {
+								args.push(this._binaryExpressionHandler(expression));
+							}
+							expression = [];
+							break;
+						}
+						default:
+							expression.push(token.data.value);
+					}
+					token = this._nextToken();
+				}
+				this._nextToken();
+				return {
+					type: this.statements.CallExpression,
+					name: prevToken.data.value,
+					arguments: args,
+				};
+			}
+			default: {
+				throw new Error('_expressionStatementHandler: <Unexpected token>');
+			}
+		}
+	}
+
+	_whileStatementHandler(token) {
+		token = this._nextToken();
+		let expression = [];
+		// Extracting expression
+		while (token.data.value != this._symbols.BR_CLOSE) {
+			expression.push(token.data.value);
+			token = this._nextToken();
+		}
+		expression = this._binaryExpressionHandler(expression);
+		// Extracting body
+		this._nextToken();
+		let body = this._blockStatementHandler(this._nextToken());
+
+		this._nextToken();
+		return {
+			type: this.statements.WhileStatement,
+			condition: expression,
+			body: body,
+		};
+	}
+
 	_ifStatementHandler(token) {
 		token = this._nextToken();
 		let expression = [];
@@ -124,15 +230,17 @@ class Parser {
 			expression.push(token.data.value);
 			token = this._nextToken();
 		}
+		expression = this._binaryExpressionHandler(expression);
+
 		// Extracting consequent
 		this._nextToken();
 		let consequent = this._blockStatementHandler(this._nextToken());
-		console.log(consequent);
 
 		// Extracting alternate
 		this._nextToken(); // Passing else and '{'
 		this._nextToken();
 		let alternate = this._blockStatementHandler(this._nextToken());
+		this._nextToken();
 
 		return {
 			type: this.statements.IfStatement,
@@ -210,90 +318,14 @@ class Parser {
 		// Handle Block Statement
 		this._nextToken();
 		let body = this._blockStatementHandler(this._nextToken());
-
 		this._nextToken();
+
 		return {
 			type: this.statements.FunctionDeclaration,
 			name: functionName,
 			params: params,
 			body: body,
 		};
-	}
-
-	/**
-	 * @returns ExpressionStatement object
-	 */
-	_expressionStatementHandler(prevToken) {
-		let token = this._nextToken();
-		switch (token.data.value) {
-			case this._symbols.PLUS:
-			case this._symbols.MINUS:
-			case this._symbols.MULT:
-			case this._symbols.DIV:
-			case this._symbols.EXPON: {
-				// BinaryExpression
-				let expression = [prevToken.data.value];
-				while (token.data.value != this._symbols.COMMAND_END) {
-					expression.push(token.data.value);
-					token = this._nextToken();
-				}
-				this._nextToken();
-				return this._binaryExpressionHandler(expression);
-			}
-			case this._symbols.EQUAL: {
-				// AssignmentExpression
-				let expression = [];
-				token = this._nextToken();
-				while (token.data.value != this._symbols.COMMAND_END) {
-					expression.push(token.data.value);
-					token = this._nextToken();
-				}
-				if (expression.length == 1) {
-					expression = expression[0];
-				} else {
-					expression = this._binaryExpressionHandler(expression);
-				}
-				this._nextToken();
-				return {
-					type: this.statements.AssignmentExpression,
-					left: prevToken.data.value,
-					right: expression,
-				};
-			}
-			case this._symbols.BR_OPEN: {
-				// CallExpression
-				let args = [];
-				let expression = [];
-
-				token = this._nextToken();
-				while (token.data.value != this._symbols.COMMAND_END) {
-					switch (token.data.value) {
-						case this._symbols.BR_CLOSE:
-						case this._symbols.COMMA: {
-							if (expression.length == 1) {
-								args.push(expression[0]);
-							} else {
-								args.push(this._binaryExpressionHandler(expression));
-							}
-							expression = [];
-							break;
-						}
-						default:
-							expression.push(token.data.value);
-					}
-					token = this._nextToken();
-				}
-				this._nextToken();
-				return {
-					type: this.statements.CallExpression,
-					name: prevToken.data.value,
-					arguments: args,
-				};
-			}
-			default: {
-				throw new Error('_expressionStatementHandler: <Unexpected token>');
-			}
-		}
 	}
 
 	/**

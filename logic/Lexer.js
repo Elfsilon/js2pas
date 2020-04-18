@@ -24,7 +24,7 @@ class Lexer {
 			operation: 'Operation',
 			separator: 'Separator',
 		};
-		this._services = ['let', 'if', 'else', 'function'];
+		this._services = ['let', 'if', 'else', 'function', 'while', 'for'];
 		this._operations = ['=', '+', '-', '*', '/', '>', '<', '<=', '>='];
 		this._separators = [';', ',', '(', ')', '{', '}'];
 	}
