@@ -1,6 +1,6 @@
 const path = require('path');
 const Lexer = require('./logic/Lexer');
-const Parcer = require('./logic/Parser');
+const Parser = require('./logic/Parser2');
 const Compiler = require('./logic/Compiler');
 const fs = require('fs').promises;
 
@@ -11,7 +11,7 @@ lex.parse(src).then((parced) => {
 	let tokens = lex.getTokens(parced);
 	lex.show(tokens);
 
-	const parser = new Parcer(tokens);
+	const parser = new Parser(tokens);
 	let ast = parser.parseTokens();
 
 	fs.writeFile('AST.json', JSON.stringify(ast)).then(() => console.log('Created AST.json'));

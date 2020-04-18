@@ -60,7 +60,7 @@ class Parcer {
 
 	_parce(token) {
 		switch (token.data.type) {
-			// If service word (let)
+			// If service word (let, function)
 			case this._tokenTypes.SERVICE:
 				switch (token.data.value) {
 					case this._triggers.VariableDeclaration: {
@@ -144,7 +144,7 @@ class Parcer {
 				this._AST.body.push(fd);
 				this._next(this._parce);
 			default:
-				this._next(this._blockStatementHandler, fd);
+			// this._next(this._blockStatementHandler, fd);
 		}
 	}
 
