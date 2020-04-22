@@ -21,15 +21,12 @@ class Compiler {
 		return this._blockHandler(ast.body.body, true);
 	}
 
-	_blockHandler(body, haveTitle = false, tabs = 0, ifexpr = false) {
+	_blockHandler(body, haveTitle = false, tabs = 0) {
 		let res = {
-			body: [],
+			variables: ['var: '],
+			functions: [],
+			body: ['begin\n'],
 		};
-		if (!ifexpr) {
-			res.body = ['begin\n'];
-			res.variables = ['var: '];
-			res.functions = [];
-		}
 		body.forEach((node) => {
 			switch (node.type) {
 				case this._types.VariableDeclaration: {
@@ -41,14 +38,9 @@ class Compiler {
 				case this._types.FunctionDeclaration: {
 					let params = node.params.join(', ');
 					res.functions.push(
-						`\nprocedure ${node.name}(${params} :<T>);\n${this._blockHandler(node.body.body, false, tabs + 1)}`
+						`procedure ${node.name}(${params});\n${this._blockHandler(node.body.body, false, tabs + 1)}`
 					);
-					break;
-				}
-				case this._types.IfStatement: {
-					res.body.push(`\tif ${this._binaryHandler(node.condition)} then begin\n`);
-					res.body.push(`\t${this._blockHandler(node.consequent.body, false, tabs + 1, true)}\tend;\n`);
-					res.body.push(`\telse begin\n\t${this._blockHandler(node.alternate.body, false, tabs + 1, true)}\tend;\n`);
+					// res.functions.push(`${this._blockHandler(node.body.body, false, tabs + 1)}`);
 					break;
 				}
 				case this._types.ExpressionStatement: {
@@ -80,14 +72,10 @@ class Compiler {
 			}
 		});
 
-		return this._joinBlock(res, haveTitle, ifexpr);
+		return this._joinBlock(res, haveTitle);
 	}
 
-	_joinBlock(data, haveTitle, ifexpr) {
-		if (ifexpr) {
-			return data.body.join('');
-		}
-
+	_joinBlock(data, haveTitle) {
 		data.variables[data.variables.length - 1] = ':integer;\n';
 		if (data.variables.length == 1) {
 			data.variables = '';
@@ -102,7 +90,11 @@ class Compiler {
 		} else {
 			data.body.push('end;\n\n');
 			data.body = data.body.join('');
+			console.log(data.variables);
+
 			let t = [data.variables, data.functions, data.body].join('');
+			console.log(t);
+
 			return t;
 		}
 	}
