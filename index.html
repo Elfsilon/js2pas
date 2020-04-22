@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <title>js2pas</title>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="modal-ast">
+            <div class="button close-modal red">x</div>
+            <div class="ast-container">
+
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="menu-container">
+                <div class="menu">
+                    <div class="item translate-button button green">Translate</div>
+                    <div class="item ast-button button">See AST</div>
+                </div>
+            </div>
+            <div class="code-container">
+                <div class="code">
+                    <div class="js editor" contenteditable="true"></div>
+                    <div class="pas editor" contenteditable="true"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="front.js"></script>
+    <script src="./modules/Lexer.js"></script>
+    <script src="./modules/Parser.js"></script>
+    <script src="./modules/RPN.js"></script>
+    <script src="./modules/Compiler.js"></script>
+</body>
+
+</html>
