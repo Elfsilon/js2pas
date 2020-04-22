@@ -1,1 +1,22 @@
-{"type":"Program","body":{"type":"BlockStatement","body":[{"type":"VariableDeclaration","declarations":[{"id":"a","init":"b"}],"kind":"let"},{"type":"ExpressionStatement","expression":{"type":"BinaryExpression","operation":"+","left":"a","right":"b"}},{"type":"IfStatement","condition":{"type":"BinaryExpression","operation":">","left":"a","right":"b"},"consequent":{"type":"BlockStatement","body":[{"type":"ExpressionStatement","expression":{"type":"CallExpression","name":"print","arguments":["a"]}}]},"alternate":{"type":"BlockStatement","body":[{"type":"ExpressionStatement","expression":{"type":"CallExpression","name":"print","arguments":["a"]}}]}},{"type":"FunctionDeclaration","name":"swap","params":["a","b"],"body":{"type":"BlockStatement","body":[{"type":"VariableDeclaration","declarations":[{"id":"tmp","init":"a"}],"kind":"let"},{"type":"ExpressionStatement","expression":{"type":"AssignmentExpression","left":"a","right":"b"}},{"type":"ExpressionStatement","expression":{"type":"AssignmentExpression","left":"b","right":"tmp"}}]}}]}}
+{
+    "type": "Program",
+    "body": {
+        "type": "BlockStatement",
+        "body": [{ "type": "VariableDeclaration", "declarations": [{ "id": "a", "init": "b" }], "kind": "let" }, { "type": "ExpressionStatement", "expression": { "type": "BinaryExpression", "operation": "+", "left": "a", "right": "b" } }, { "type": "IfStatement", "condition": { "type": "BinaryExpression", "operation": ">", "left": "a", "right": "b" }, "consequent": { "type": "BlockStatement", "body": [{ "type": "ExpressionStatement", "expression": { "type": "CallExpression", "name": "print", "arguments": ["a"] } }] }, "alternate": { "type": "BlockStatement", "body": [{ "type": "ExpressionStatement", "expression": { "type": "CallExpression", "name": "print", "arguments": ["a"] } }] } }, {
+            "type": "FunctionDeclaration",
+            "name": "swap",
+            "params": ["a", "b"],
+            "body": {
+                "type": "BlockStatement",
+                "body": [{ "type": "VariableDeclaration", "declarations": [{ "id": "tmp", "init": "a" }], "kind": "let" }, {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                        "type": "AssignmentExpression",
+                        "left": "a",
+                        "right": "b"
+                    }
+                }, { "type": "ExpressionStatement", "expression": { "type": "AssignmentExpression", "left": "b", "right": "tmp" } }]
+            }
+        }]
+    }
+}
