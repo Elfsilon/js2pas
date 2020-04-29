@@ -2,3 +2,5 @@ AST.json
 output.pas
 source.js
 test.js
+
+node_modules

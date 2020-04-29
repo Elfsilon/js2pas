@@ -7,3 +7,9 @@ function swap(a, b) {
 	a = b;
 	b = tmp;
 }
+
+if (a > b) {
+	a = b;
+} else {
+	b = a;
+}

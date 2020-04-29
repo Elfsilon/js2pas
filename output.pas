@@ -12,5 +12,11 @@ end;
 begin
 	a := b;
 	a + b;
+	if a > b then begin
+		a = b;
+	end;
+	else begin
+		b = a;
+	end;
 end.
 

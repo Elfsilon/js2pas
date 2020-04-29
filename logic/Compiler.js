@@ -21,12 +21,22 @@ class Compiler {
 		return this._blockHandler(ast.body.body, true);
 	}
 
-	_blockHandler(body, haveTitle = false, tabs = 0) {
+	_blockHandler(body, haveTitle = false, tabs = 0, handlIf = false) {
+		// let res = {
+		// 	variables: ['var: '],
+		// 	functions: [],
+		// 	body: ['begin\n'],
+		// };
 		let res = {
-			variables: ['var: '],
-			functions: [],
-			body: ['begin\n'],
+			// variables: ['var: '],
+			// functions: [],
+			body: [],
 		};
+		if (!handlIf) {
+			res.body = ['begin\n'];
+			res.functions = [];
+			res.variables = ['var: '];
+		}
 		body.forEach((node) => {
 			switch (node.type) {
 				case this._types.VariableDeclaration: {
@@ -41,6 +51,12 @@ class Compiler {
 						`procedure ${node.name}(${params});\n${this._blockHandler(node.body.body, false, tabs + 1)}`
 					);
 					// res.functions.push(`${this._blockHandler(node.body.body, false, tabs + 1)}`);
+					break;
+				}
+				case this._types.IfStatement: {
+					res.body.push(`\tif ${this._binaryHandler(node.condition)} then begin\n`);
+					res.body.push(`\t${this._blockHandler(node.consequent.body, false, tabs + 2, true)}\tend;\n`);
+					res.body.push(`\telse begin\n\t${this._blockHandler(node.alternate.body, false, tabs + 2, true)}\tend;\n`);
 					break;
 				}
 				case this._types.ExpressionStatement: {
@@ -72,6 +88,9 @@ class Compiler {
 			}
 		});
 
+		if (handlIf) {
+			return res.body.join('');
+		}
 		return this._joinBlock(res, haveTitle);
 	}
 

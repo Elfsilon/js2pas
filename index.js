@@ -8,6 +8,9 @@ const src = path.join(__dirname, 'source.js');
 
 const lex = new Lexer();
 lex.parse(src).then((parced) => {
+	// Проверка синтаксиса
+	console.log(parced);
+
 	let tokens = lex.getTokens(parced);
 	lex.show(tokens);
 

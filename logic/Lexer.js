@@ -38,6 +38,22 @@ class Lexer {
 		console.log(output);
 	}
 
+	// check(parced) {
+	// 	let states = {
+	// 		default: 'default',
+	// 		let: 'let'
+	// 	};
+	// 	let state = states.default;
+	// 	parced.forEach(lex => {
+	// 		switch(state) {
+	// 			case state.default: {
+
+	// 				break;
+	// 			}
+	// 		}
+	// 	});
+	// }
+
 	// Cache errors! Now absolutely all tokens have a normal type
 	getTokens(parced) {
 		let tokens = [];
