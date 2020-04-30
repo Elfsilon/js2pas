@@ -26,7 +26,7 @@ class Lexer {
         };
         this._services = ['let', 'if', 'else', 'function', 'while', 'for'];
         this._operations = ['=', '+', '-', '*', '/', '>', '<', '<=', '>='];
-        this._separators = [';', ',', '(', ')', '{', '}'];
+        this._separators = [';', ',', '(', ')', '{', '}', '[', ']'];
     }
 
     show(tokens) {
@@ -58,19 +58,30 @@ class Lexer {
         return tokens;
     }
 
+
+
     async parse(file) {
         try {
             let text = await fs.readFile(file);
             return text
                 .toString()
                 .replace(/\n|\r|\t/g, '')
-                .replace(/==|[,;=<>{}()+*]/g, ' $& ')
+                .replace(/==|[,;=<>{}()+*]|\[|\]/g, ' $& ')
                 .split(' ')
                 .filter((lex) => lex != '');
         } catch {
             throw new Error('Can not read this file');
         }
     }
+
+    // parseText(text) {
+    //     return text
+    //         .toString()
+    //         .replace(/\n|\r|\t/g, '')
+    //         .replace(/==|[,;=<>{}()+*]/g, ' $& ')
+    //         .split(' ')
+    //         .filter((lex) => lex != '');
+    // }
 }
 
 module.exports = Lexer;

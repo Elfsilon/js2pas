@@ -1,0 +1,18 @@
+function fun(a, b) {
+let a = 5 + b;
+}
+
+
+function fun(a, b) {
+let a = 5 + b;
+a + b;
+}
+
+if (a > b) {
+let a = b;
+} else {
+print(b);
+}
+
+let a = b;
+a + b;
