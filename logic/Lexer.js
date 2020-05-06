@@ -60,18 +60,13 @@ class Lexer {
 
 
 
-    async parse(file) {
-        try {
-            let text = await fs.readFile(file);
-            return text
-                .toString()
-                .replace(/\n|\r|\t/g, '')
-                .replace(/==|[,;=<>{}()+*]|\[|\]/g, ' $& ')
-                .split(' ')
-                .filter((lex) => lex != '');
-        } catch {
-            throw new Error('Can not read this file');
-        }
+    parse(text) {
+        return text
+            .toString()
+            .replace(/\n|\r|\t/g, '')
+            .replace(/==|[,;=<>{}()+*]|\[|\]/g, ' $& ')
+            .split(' ')
+            .filter((lex) => lex != '');
     }
 
     // parseText(text) {
