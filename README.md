@@ -47,10 +47,10 @@ compiler.save(compiled).then(() => console.log('\x1b[34m', 'Succesfully compiled
 - [x] Create compiler structure
 - [x] Add compile of variable declaration
 - [x] Add possibility to save program to the file
-- [ ] Add handler of if/else statement
-- [ ] Add handler of for statement
-- [ ] Add handler of while statement
-- [ ] Add handler of do-while statement
-- [ ] Add handler of function declaration
-- [ ] Finish the compile method
+- [x] Add handler of if/else statement
+- [x] Add handler of for statement
+- [x] Add handler of while statement
+- [x] Add handler of do-while statement
+- [x] Add handler of function declaration
+- [x] Finish the compile method
 - [ ] Create syntax analyzer
