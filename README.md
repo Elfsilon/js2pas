@@ -53,4 +53,4 @@ compiler.save(compiled).then(() => console.log('\x1b[34m', 'Succesfully compiled
 - [x] Add handler of do-while statement
 - [x] Add handler of function declaration
 - [x] Finish the compile method
-- [ ] Create syntax analyzer
+- [x] Create syntax analyzer
